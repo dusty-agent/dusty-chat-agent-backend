@@ -28,8 +28,8 @@ jobs:
           gcloud auth activate-service-account --key-file=${{ secrets.GCLOUD_SERVICE_KEY }}
           gcloud config set project dusty-chat-agent
           gcloud run deploy dusty-chat-agent-backend \
-            --image=gcr.io/dusty-agent/dusty-chat-agent-backend \
+            --image=gcr.io/cloudrun/placeholder@sha256:ac2c047ce27d6eb2c13855f3fb35e28a601618f4cfb45e0cb3dd6aebde2b6f0a \
             --platform=managed \
-            --region=us-central1 \
+            --region=asia-northeast3 \
             --allow-unauthenticated \
             --set-env-vars=FLAVOR=production,API_BASE_URL=https://dustyagent.chat/api,JWT_SECRET=${{ secrets.JWT_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL_PROD }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
