@@ -1,35 +1,41 @@
-name: Deploy Backend
+name: Deploy to Google Cloud Run
 
 on:
   push:
     branches:
-      - main  # 운영 배포는 main 브랜치에서만 실행
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
         with:
-          python-version: '3.12'
+          version: '380.0.0'
 
-      - name: Install Dependencies
+      - name: Authenticate to Google Cloud
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          echo "${{ secrets.GCLOUD_SERVICE_KEY }}" > ${{ github.workspace }}/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file=${{ github.workspace }}/gcloud-service-key.json
 
-      - name: Deploy to Google Cloud Run
+      - name: Set project ID
         run: |
-          gcloud auth activate-service-account --key-file=${{ secrets.GCLOUD_SERVICE_KEY }}
           gcloud config set project dusty-chat-agent
-          gcloud run deploy dusty-chat-agent-backend \
-            --image=gcr.io/cloudrun/placeholder@sha256:ac2c047ce27d6eb2c13855f3fb35e28a601618f4cfb45e0cb3dd6aebde2b6f0a \
-            --platform=managed \
-            --region=asia-northeast3 \
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy dusty-chat-agent \
+            --image=gcr.io/dusty-agent/dusty-chat-agent-backend \
+            --platform managed \
+            --region us-central1 \
             --allow-unauthenticated \
             --set-env-vars=FLAVOR=production,API_BASE_URL=https://dustyagent.chat/api,JWT_SECRET=${{ secrets.JWT_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL_PROD }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          
+      - name: Delete the service account key file
+        run: |
+          rm -f ${{ github.workspace }}/gcloud-service-key.json
