@@ -26,9 +26,9 @@ jobs:
       - name: Deploy to Google Cloud Run
         run: |
           gcloud auth activate-service-account --key-file=${{ secrets.GCLOUD_SERVICE_KEY }}
-          gcloud config set project your-gcp-project
-          gcloud run deploy dusty-agent-backend \
-            --image=gcr.io/your-gcp-project/dusty-agent-backend \
+          gcloud config set project dusty-chat-agent
+          gcloud run deploy dusty-chat-agent-backend \
+            --image=gcr.io/dusty-agent/dusty-chat-agent-backend \
             --platform=managed \
             --region=us-central1 \
             --allow-unauthenticated \
