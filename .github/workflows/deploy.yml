@@ -1,4 +1,4 @@
-name: Deploy to Google Cloud Run
+name: Build and Deploy to Google Cloud
 
 on:
   push:
@@ -13,29 +13,39 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      # Set up Cloud SDK
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
           version: '380.0.0'
 
+      # Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
-        run: |
-          echo "${{ secrets.GCLOUD_SERVICE_KEY }}" > ${{ github.workspace }}/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file=${{ github.workspace }}/gcloud-service-key.json
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
 
+      # Set project ID
       - name: Set project ID
         run: |
           gcloud config set project dusty-chat-agent
 
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t gcr.io/dusty-agent/dusty-chat-agent-backend:${{ github.sha }} .
+
+      # Push Docker image to Google Container Registry (GCR)
+      - name: Push Docker image to GCR
+        run: |
+          docker push gcr.io/dusty-agent/dusty-chat-agent-backend:${{ github.sha }}
+
+      # Deploy to Cloud Run
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy dusty-chat-agent \
-            --image=gcr.io/dusty-agent/dusty-chat-agent-backend \
+            --image=gcr.io/dusty-agent/dusty-chat-agent-backend:${{ github.sha }} \
             --platform managed \
-            --region us-central1 \
+            --region asia-northeast3 \
             --allow-unauthenticated \
             --set-env-vars=FLAVOR=production,API_BASE_URL=https://dustyagent.chat/api,JWT_SECRET=${{ secrets.JWT_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL_PROD }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-          
-      - name: Delete the service account key file
-        run: |
-          rm -f ${{ github.workspace }}/gcloud-service-key.json
