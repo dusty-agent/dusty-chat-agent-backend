@@ -39,9 +39,10 @@ jobs:
         run: |
           gcloud config set project dusty-chat-agent
           gcloud run deploy dusty-chat-agent \
-            --image=us-west2-docker.pkg.dev/dusty-chat-agent/quickstart-docker-repo/quickstart-image:${{ github.sha }} \
-            --platform managed \
-            --region asia-northeast3 \
-            --allow-unauthenticated \
-            --set-env-vars FLAVOR=production,API_BASE_URL=https://dustyagent.chat/api,JWT_SECRET=${{ secrets.JWT_SECRET }},DATABASE_URL_PROD=${{ secrets.DATABASE_URL_PROD }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-            --port 8000
+          --image=us-west2-docker.pkg.dev/dusty-chat-agent/quickstart-docker-repo/quickstart-image:${{ github.sha }} \
+          --platform=managed \
+          --region=asia-northeast3 \
+          --allow-unauthenticated \
+          --set-env-vars=FLAVOR=production,API_BASE_URL=https://dustyagent.chat/api,JWT_SECRET=${{ secrets.JWT_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL_PROD }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+          --port=8000 \
+          --no-iam-policy-binding
