@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # FastAPI 앱 소스 복사
 COPY . .
 
-# 포트 8080을 외부에 노출
+# 포트 8000을 외부에 노출
 EXPOSE 8000
 
 # uvicorn 실행, 환경 변수 PORT 사용
