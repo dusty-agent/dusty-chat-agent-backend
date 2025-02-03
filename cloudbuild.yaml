@@ -1,5 +1,8 @@
+substitutions:
+  _IMAGE_TAG: 'latest' 
+
 steps:
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-west2-docker.pkg.dev/dusty-chat-agent/quickstart-docker-repo/quickstart-image:${_IMAGE_TAG}', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-west2-docker.pkg.dev/dusty-chat-agent/quickstart-docker-repo/quickstart-image:$_IMAGE_TAG', '.']
 images:
-  - 'us-west2-docker.pkg.dev/dusty-chat-agent/quickstart-docker-repo/quickstart-image:${_IMAGE_TAG}'
+- 'us-west2-docker.pkg.dev/dusty-chat-agent/quickstart-docker-repo/quickstart-image:$_IMAGE_TAG'
