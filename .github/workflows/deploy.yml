@@ -1,9 +1,9 @@
-name: Build and Deploy to Google Cloud
+name: Deploy Backend
 
 on:
   push:
     branches:
-      - main
+      - main  # 운영 배포는 main 브랜치에서만 실행
 
 jobs:
   deploy:
@@ -13,39 +13,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+      
       # Set up Cloud SDK
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
           version: '>= 363.0.0'
 
-      # Authenticate to Google Cloud
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
-
       # Set project ID
       - name: Set project ID
-        run: |
-          gcloud config set project dusty-chat-agent
+        run: gcloud config set project dusty-chat-agent
 
-      # Build Docker image
-      - name: Build Docker image
+      # Build & Push Docker image using Cloud Build
+      - name: GCLOUD BUILDS SUBMIT
         run: |
-          docker build -t gcr.io/dusty-agent/dusty-chat-agent-backend:${{ github.sha }} .
-
-      # Push Docker image to Google Container Registry (GCR)
-      - name: Push Docker image to GCR
-        run: |
-          docker push gcr.io/dusty-agent/dusty-chat-agent-backend:${{ github.sha }}
+          gcloud builds submit --region=us-west2 --config cloudbuild.yaml --substitutions=_IMAGE_TAG=${{ github.sha }}
 
       # Deploy to Cloud Run
       - name: Deploy to Cloud Run
         run: |
+          gcloud auth activate-service-account --key-file=${{ secrets.GCLOUD_SERVICE_KEY }}
+          gcloud config set project dusty-chat-agent
           gcloud run deploy dusty-chat-agent \
-            --image=gcr.io/dusty-agent/dusty-chat-agent-backend:${{ github.sha }} \
-            --platform managed \
-            --region asia-northeast3 \
+            --image=us-west2-docker.pkg.dev/dusty-chat-agent/quickstart-docker-repo/quickstart-image \
+            --platform=managed \
+            --region=asia-northeast3 \  # ← us-west2 → asia-northeast3 로 변경
             --allow-unauthenticated \
             --set-env-vars=FLAVOR=production,API_BASE_URL=https://dustyagent.chat/api,JWT_SECRET=${{ secrets.JWT_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL_PROD }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            --port=8000
