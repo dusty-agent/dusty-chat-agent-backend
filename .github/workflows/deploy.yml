@@ -43,6 +43,6 @@ jobs:
             --image=us-west2-docker.pkg.dev/dusty-chat-agent/quickstart-docker-repo/quickstart-image \
             --platform=managed \
             --region=asia-northeast3 \  # ← us-west2 → asia-northeast3 로 변경
-            --allow-unauthenticated \
+            --allow-unauthenticated \git 
             --set-env-vars=FLAVOR=production,API_BASE_URL=https://dustyagent.chat/api,JWT_SECRET=${{ secrets.JWT_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL_PROD }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             --port=8000
