@@ -29,17 +29,21 @@ jobs:
       - name: Set project ID
         run: gcloud config set project dusty-chat-agent
 
-      # Build & Push Docker image using Cloud Build
-      - name: GCLOUD BUILDS SUBMIT
-        run: |
-          gcloud builds submit --region=us-west2 --config cloudbuild.yaml --substitutions=_IMAGE_TAG=${{ github.sha }}
+      # Docker Hub 로그인
+      - name: Docker Login
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
-      # Deploy to Cloud Run
+      # Docker Build & Push to Docker Hub
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t dustyagent/fastapi-app:latest .
+          docker push dustyagent/fastapi-app:latest
+
+      # Deploy to Google Cloud Run
       - name: Deploy to Cloud Run
         run: |
-          gcloud config set project dusty-chat-agent
           gcloud run deploy dusty-chat-agent \
-            --image=us-west2-docker.pkg.dev/dusty-chat-agent/quickstart-docker-repo/quickstart-image:latest \
+            --image=docker.io/dustyagent/fastapi-app:latest \
             --platform=managed \
             --region=asia-northeast3 \
             --allow-unauthenticated \

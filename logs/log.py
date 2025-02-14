@@ -10,8 +10,10 @@ print("Logs directory:", log_dir)
 
 # 로그 설정: 콘솔과 파일에 동시에 기록되도록 설정합니다.
 logging.basicConfig(
+    filename="backend.logs.log",
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    encoding="utf-8",
     handlers=[
         logging.StreamHandler(),          # 콘솔 출력
         logging.FileHandler(log_file)       # 파일 출력

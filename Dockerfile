@@ -1,18 +1,18 @@
-# Python 3.10 이미지 사용
+# Base image
 FROM python:3.10
 
-# 작업 디렉토리 설정
+# Set working directory
 WORKDIR /app
 
-# 의존성 파일 복사 및 설치
-COPY requirements.txt . 
+# Install dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# FastAPI 앱 소스 복사
+# Copy application files
 COPY . .
 
-# 포트 8000을 외부에 노출
+# Expose the FastAPI port
 EXPOSE 8000
 
-# uvicorn 실행, 환경 변수 PORT 사용
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start FastAPI server
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "--bind", "0.0.0.0:8000"]
